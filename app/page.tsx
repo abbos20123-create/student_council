@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Group, Students } from "./types";
 import { createClient } from "@/utilis/supabase/clientComponents";
-
+import Rodal from "rodal";
+import 'rodal/rodal/css/lib'
 
 export default function Home() {
 
@@ -46,10 +47,7 @@ export default function Home() {
 
   const addGroup = async () => {
       if (!groupName.trim()) return;
-      const { data, error } = await supabase
-        .from("groups")
-        .insert({ name: groupName })
-        .select();
+      const { data, error } = await supabase.from("groups").insert({ name: groupName }).select();
   
       if (error) {
         console.error("Error adding group:", error);
@@ -69,16 +67,13 @@ export default function Home() {
         return;
       }
   
-      const { data, error } = await supabase
-        .from("students")
-        .insert({
+      const { data, error } = await supabase.from("students").insert({
           name,
           age: Number(age) || 0,
           email,
           groupId: groupId,
           active,
-        })
-        .select();
+        }).select();
   
       if (error) {
         console.error("Error adding student:", error);
@@ -86,7 +81,7 @@ export default function Home() {
       }
   
       if (data) {
-        setStudents([...students, data[0]]);
+        setStudents(data);
 
         setName("");
         setAge("");
@@ -96,6 +91,18 @@ export default function Home() {
       }
     };
 
+  const deleteStudent = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this student?")) return;
+
+    const { error } = await supabase.from("students").delete().eq("id", id);
+
+    if (error) {
+      console.error("Error deleting student:", error);
+      return;
+    }
+
+    setStudents(students.filter((student) => student.id !== id));
+  };
   
 
   return (
@@ -132,6 +139,54 @@ export default function Home() {
           </button>
         </div>
       </nav>
+
+
+
+      <Rodal visible={groupModal} onClose={() => setGroupModal(false)} customStyles={{ width: "400px", height: "230px" }}>
+        <div className="flex flex-col gap-4 p-2 text-black">
+          <h2 className="text-2xl font-bold">Add Group</h2>
+          <input
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            type="text"
+            placeholder="Group name"
+            className="border p-2 rounded w-full outline-blue-500 text-black bg-white"
+          />
+          <button onClick={addGroup} className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 rounded transition">
+            Add Group
+          </button>
+        </div>
+      </Rodal>
+
+      <Rodal visible={studentModal} onClose={() => setStudentModal(false)} customStyles={{ width: "400px", height: "450px" }}>
+        <div className="flex flex-col gap-4 p-2 text-black">
+          <h2 className="text-2xl font-bold">Add Student</h2>
+          <input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="Student name" className="border p-2 rounded w-full outline-blue-500 text-black bg-white" />
+          <input value={age} onChange={(e) => setAge(e.target.value !== "" ? Number(e.target.value) : "")} type="number" placeholder="Student age" className="border p-2 rounded w-full outline-blue-500 text-black bg-white" />
+          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Student Email" className="border p-2 rounded w-full outline-blue-500 text-black bg-white" />
+
+          <label className="flex gap-3 items-center select-none text-gray-700 font-medium">
+            <span>Active:</span>
+            <input checked={active} onChange={(e) => setActive(e.target.checked)} type="checkbox" className="w-5 h-5 accent-blue-500" />
+          </label>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-500 font-medium">Assign to Group</label>
+            <select className="border p-2 rounded w-full bg-white text-black outline-blue-500" value={groupId} onChange={(e) => setGroupId(Number(e.target.value))}>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button onClick={addStudent} className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 rounded transition w-full mt-2">
+            Add Student
+          </button>
+        </div>
+      </Rodal>
+
     </div>
   );
 }
