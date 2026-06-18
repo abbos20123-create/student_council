@@ -32,6 +32,11 @@ export default function Home() {
     getGroups();
   }, []);
 
+  useEffect(() => {
+    if (groups.length > 0 && !groupId) {
+      setGroupId(groups[0].id);
+    }
+  }, [groups, groupId]);
 
   const getStudents = async () => {
     const { data, error } = await supabase.from("students").select("*");
@@ -90,6 +95,13 @@ export default function Home() {
         setStudentModal(false);
       }
     };
+
+  const filteredStudents = students.filter((student) => {
+    const matchesGroup = selectedGroupId ? student.groupId === selectedGroupId : true;
+    const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesGroup && matchesSearch;
+  });
+
 
   const deleteStudent = async (id: number) => {
     if (!confirm("Are you sure you want to delete this student?")) return;
