@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Group, Students } from "./types";
 import { createClient } from "@/utilis/supabase/clientComponents";
 import Rodal from "rodal";
-import 'rodal/rodal/css/lib'
+import 'rodal/lib/rodal.css'
 
 export default function Home() {
 
@@ -23,6 +23,7 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [groupId, setGroupId] = useState<number>(0);
   const [active, setActive] = useState(false);
+  const [editingStudent, setEditingStudent] = useState<Students | null>(null);
 
   const supabase = createClient()
 
@@ -66,41 +67,81 @@ export default function Home() {
       }
     };
   
-    const addStudent = async () => {
-      if (!name || !email || !groupId) {
-        alert("Please fill in all student details.");
-        return;
-      }
-  
-      const { data, error } = await supabase.from("students").insert({
+  const saveStudent = async () => {
+    if (!name || !email || !groupId) {
+      alert("Please fill in all student details.");
+      return;
+    }
+
+    let response;
+
+    if (editingStudent) {
+      response = await supabase
+        .from("students")
+        .update({
           name,
-          age: Number(age) || 0,
+          age: Number(age),
           email,
-          groupId: groupId,
+          groupId,
           active,
-        }).select();
-  
-      if (error) {
-        console.error("Error adding student:", error);
-        return;
-      }
-  
-      if (data) {
-        setStudents(data);
+        })
+        .eq("id", editingStudent.id)
+        .select();
+    } else {
+      response = await supabase
+        .from("students")
+        .insert({
+          name,
+          age: Number(age),
+          email,
+          groupId,
+          active,
+        })
+        .select();
+    }
 
-        setName("");
-        setAge("");
-        setEmail("");
-        setActive(false);
-        setStudentModal(false);
-      }
-    };
+    const { data, error } = response;
 
-  const filteredStudents = students.filter((student) => {
-    const matchesGroup = selectedGroupId ? student.groupId === selectedGroupId : true;
-    const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesGroup && matchesSearch;
-  });
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    if (editingStudent) {
+      setStudents(
+        students.map((student) =>
+          student.id === editingStudent.id ? data[0] : student
+        )
+      );
+    } else {
+      setStudents([...students, data[0]]);
+    }
+
+    setEditingStudent(null);
+    setName("");
+    setAge("");
+    setEmail("");
+    setActive(false);
+    setStudentModal(false);
+  };
+
+
+  const startEdit = (student: Students) => {
+    setEditingStudent(student);
+
+    setName(student.name);
+    setAge(student.age);
+    setEmail(student.email);
+    setGroupId(student.groupId);
+    setActive(student.active);
+
+    setStudentModal(true);
+  };
+
+
+
+
+  
 
 
   const deleteStudent = async (id: number) => {
@@ -116,6 +157,26 @@ export default function Home() {
     setStudents(students.filter((student) => student.id !== id));
   };
   
+
+
+  const closeStudentModal = () =>{
+    setStudentModal(false);
+    setEditingStudent(null);
+
+    setName("");
+    setAge("");
+    setEmail("");
+    setActive(false);
+  }
+
+
+
+const filteredStudents = students.filter((student) => {
+    const matchesGroup = selectedGroupId ? student.groupId === selectedGroupId : true;
+    const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesGroup && matchesSearch;
+  });
+
 
   return (
     <div>
@@ -137,14 +198,14 @@ export default function Home() {
 
         <div className="flex gap-4">
           <button
-            className="px-5 py-3 border border-blue-500 text-blue-500 rounded-xl hover:bg-blue-50"
+            className="px-5 py-3 border cursor-pointer border-blue-500 text-blue-500 rounded-xl hover:bg-blue-50"
             onClick={() => setGroupModal(true)}
           >
             Add Group
           </button>
 
           <button
-            className="px-5 py-3 border border-blue-500 text-blue-500 rounded-xl hover:bg-blue-50"
+            className="px-5 cursor-pointer py-3 border border-blue-500 text-blue-500 rounded-xl hover:bg-blue-50"
             onClick={() => setStudentModal(true)}
           >
             Add Student
@@ -225,6 +286,12 @@ export default function Home() {
                   <td>
                     <div className="flex justify-center gap-4">
                       <button
+                        onClick={() => startEdit(student)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded"
+                      >
+                        ✏️
+                      </button>
+                      <button
                         onClick={() => deleteStudent(student.id)}
                         className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded transition shadow-sm"
                       >
@@ -259,9 +326,9 @@ export default function Home() {
         </div>
       </Rodal>
 
-      <Rodal visible={studentModal} onClose={() => setStudentModal(false)} customStyles={{ width: "400px", height: "450px" }}>
+      <Rodal visible={studentModal} onClose={closeStudentModal} customStyles={{ width: "400px", height: "450px" }}>
         <div className="flex flex-col gap-4 p-2 text-black">
-          <h2 className="text-2xl font-bold">Add Student</h2>
+          <h2 className="text-2xl font-bold">{editingStudent ? "Update Student": "Save Student" }</h2>
           <input value={name} onChange={(e) => setName(e.target.value)} type="text" placeholder="Student name" className="border p-2 rounded w-full outline-blue-500 text-black bg-white" />
           <input value={age} onChange={(e) => setAge(e.target.value !== "" ? Number(e.target.value) : "")} type="number" placeholder="Student age" className="border p-2 rounded w-full outline-blue-500 text-black bg-white" />
           <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Student Email" className="border p-2 rounded w-full outline-blue-500 text-black bg-white" />
@@ -282,8 +349,8 @@ export default function Home() {
             </select>
           </div>
 
-          <button onClick={addStudent} className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 rounded transition w-full mt-2">
-            Add Student
+          <button onClick={saveStudent} className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 rounded transition w-full mt-2">
+            {editingStudent ?"Update Student":"Save Student"}
           </button>
         </div>
       </Rodal>
