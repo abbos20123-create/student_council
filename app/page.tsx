@@ -240,8 +240,8 @@ export default function AdvancedDashboard() {
     });
 
     filtered = [...filtered].sort((a, b) => {
-      let av: string | number = a[sortKey] ?? "";
-      let bv: string | number = b[sortKey] ?? "";
+      let av: string | number |boolean = a[sortKey] ?? "";
+      let bv: string | number | boolean = b[sortKey] ?? "";
       if (typeof av === "boolean") av = av ? 1 : 0;
       if (typeof bv === "boolean") bv = bv ? 1 : 0;
       if (av < bv) return sortDir === "asc" ? -1 : 1;
