@@ -154,6 +154,45 @@ export default function Home() {
 
 
 
+      <div className="flex flex-wrap gap-6 p-6">
+        {groups.map((g) => {
+          const studentCount = students.filter((s) => s.groupId === g.id).length;
+          const isSelected = selectedGroupId === g.id;
+
+          return (
+            <div
+              key={g.id}
+              onClick={() => setSelectedGroupId(isSelected ? null : g.id)}
+              className={`w-80 h-52 border-2 rounded-3xl p-6 flex flex-col justify-between cursor-pointer transition-all ${isSelected ? "border-blue-500 bg-blue-50/30" : "border-gray-200 hover:border-gray-400"
+                }`}
+            >
+              <div>
+                <h1 className="text-4xl font-bold text-center">{g.name}</h1>
+                <p className="text-center text-xl text-gray-600 mt-2">
+                  {studentCount} student{studentCount !== 1 ? "s" : ""}
+                </p>
+              </div>
+
+              <div className="flex justify-end">
+                <label className="relative inline-flex items-center cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => setSelectedGroupId(isSelected ? null : g.id)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-blue-500"></div>
+                  <div className="absolute left-1 top-1 w-6 h-6 bg-white rounded-full transition peer-checked:translate-x-6"></div>
+                </label>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      
+
+
       <Rodal visible={groupModal} onClose={() => setGroupModal(false)} customStyles={{ width: "400px", height: "230px" }}>
         <div className="flex flex-col gap-4 p-2 text-black">
           <h2 className="text-2xl font-bold">Add Group</h2>
