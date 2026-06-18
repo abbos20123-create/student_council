@@ -155,7 +155,7 @@ export default function Home() {
 
 
       <div className="flex flex-wrap gap-6 p-6">
-        {groups.map((g) => {
+        {groups.map((g:Group) => {
           const studentCount = students.filter((s) => s.groupId === g.id).length;
           const isSelected = selectedGroupId === g.id;
 
@@ -190,7 +190,57 @@ export default function Home() {
         })}
       </div>
 
+
       
+      <div className="px-8 mt-4">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="text-2xl border-b text-center">
+              <th className="pb-4">№</th>
+              <th className="pb-4">Fullname</th>
+              <th className="pb-4">Age</th>
+              <th className="pb-4">Email</th>
+              <th className="pb-4">Active</th>
+              <th className="pb-4">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredStudents.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center py-10 text-gray-400 text-xl">
+                  No students found.
+                </td>
+              </tr>
+            ) : (
+              filteredStudents.map((student, index) => (
+                <tr key={student.id} className="text-xl text-center h-20 border-b border-gray-100 hover:bg-gray-50">
+                  <td>{index + 1}</td>
+                  <td>{student.name}</td>
+                  <td>{student.age}</td>
+                  <td>{student.email}</td>
+                  <td>
+                    <input type="checkbox" checked={student.active} disabled className="w-5 h-5 accent-blue-500" />
+                  </td>
+                  <td>
+                    <div className="flex justify-center gap-4">
+                      <button
+                        onClick={() => deleteStudent(student.id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded transition shadow-sm"
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+
+
 
 
       <Rodal visible={groupModal} onClose={() => setGroupModal(false)} customStyles={{ width: "400px", height: "230px" }}>
