@@ -44,6 +44,59 @@ export default function Home() {
     if (data) setGroups(data);
   };
 
+  const addGroup = async () => {
+      if (!groupName.trim()) return;
+      const { data, error } = await supabase
+        .from("groups")
+        .insert({ name: groupName })
+        .select();
+  
+      if (error) {
+        console.error("Error adding group:", error);
+        return;
+      }
+  
+      if (data) {
+        setGroups([...groups, data[0]]);
+        setGroupName("");
+        setGroupModal(false);
+      }
+    };
+  
+    const addStudent = async () => {
+      if (!name || !email || !groupId) {
+        alert("Please fill in all student details.");
+        return;
+      }
+  
+      const { data, error } = await supabase
+        .from("students")
+        .insert({
+          name,
+          age: Number(age) || 0,
+          email,
+          groupId: groupId,
+          active,
+        })
+        .select();
+  
+      if (error) {
+        console.error("Error adding student:", error);
+        return;
+      }
+  
+      if (data) {
+        setStudents([...students, data[0]]);
+
+        setName("");
+        setAge("");
+        setEmail("");
+        setActive(false);
+        setStudentModal(false);
+      }
+    };
+
+  
 
   return (
     <div>
