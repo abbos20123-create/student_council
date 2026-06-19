@@ -7,7 +7,7 @@ import Rodal from "rodal";
 import 'rodal/lib/rodal.css';
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Search, Trash2, Edit2, Users, CheckCircle, XCircle } from "lucide-react";
-import { div } from "framer-motion/client";
+
 
 export default function Home() {
   const [groupModal, setGroupModal] = useState(false);
@@ -19,6 +19,9 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+
   const [groupName, setGroupName] = useState("");
   const [name, setName] = useState("");
   const [age, setAge] = useState<number | "">("");
@@ -27,6 +30,8 @@ export default function Home() {
   const [active, setActive] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Students | null>(null);
 
+
+
   const supabase = createClient();
 
   useEffect(() => {
@@ -34,11 +39,9 @@ export default function Home() {
     getGroups();
   }, []);
 
-  useEffect(() => {
-    if (groups.length > 0 && !groupId) {
-      setGroupId(groups[0].id);
-    }
-  }, [groups, groupId]);
+
+
+
 
   const getStudents = async () => {
     const { data, error } = await supabase.from("students").select("*");
@@ -69,11 +72,8 @@ export default function Home() {
   };
 
   const saveStudent = async () => {
-    if (!name || !email || !groupId) {
-      alert("Please fill in all student details.");
-      return;
-    }
 
+    
     let response;
 
     if (editingStudent) {
@@ -89,16 +89,13 @@ export default function Home() {
         .eq("id", editingStudent.id)
         .select();
     } else {
-      response = await supabase
-        .from("students")
-        .insert({
-          name,
-          age: Number(age),
-          email,
-          groupId,
-          active,
-        })
-        .select();
+      response = await supabase.from("students").insert({
+        name,
+        age: Number(age),
+        email,
+        groupId,
+        active,
+      }).select();
     }
 
     const { data, error } = response;
@@ -163,6 +160,21 @@ export default function Home() {
     const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesGroup && matchesSearch;
   });
+
+
+
+  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
+
+  const paginatedStudents = filteredStudents.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const pages = [];
+
+  for (let i = 1; i <= totalPages; i++) {
+    pages.push(i);
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 antialiased selection:bg-blue-500/20">
@@ -285,7 +297,7 @@ export default function Home() {
                       </td>
                     </motion.tr>
                   ) : (
-                    filteredStudents.map((student, index) => (
+                    paginatedStudents.map((student, index) => (
                       <motion.tr
                         key={student.id}
                         initial={{ opacity: 0, y: 4 }}
@@ -294,7 +306,7 @@ export default function Home() {
                         transition={{ duration: 0.2 }}
                         className="hover:bg-slate-50/80 transition-colors group"
                       >
-                        <td className="py-4 px-6 text-center text-slate-400 font-normal">{index + 1}</td>
+                        <td className="py-4 px-6 text-center text-slate-400 font-normal">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                         <td className="py-4 px-6 font-semibold text-slate-900">{student.name}</td>
                         <td className="py-4 px-6 text-center text-slate-600">{student.age}</td>
                         <td className="py-4 px-6 text-slate-500 font-normal">{student.email}</td>
@@ -331,6 +343,39 @@ export default function Home() {
                 </AnimatePresence>
               </tbody>
             </table>
+            <div className="flex justify-between items-center p-4 border-t border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">Show:</span>
+
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="border rounded-lg px-2 py-1"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                </select>
+              </div>
+
+              <div className="flex gap-2">
+                {pages.map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 rounded-lg ${currentPage === page
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-100 hover:bg-slate-200"
+                      }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </main>
