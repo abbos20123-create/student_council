@@ -165,7 +165,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 antialiased selection:bg-blue-500/20">
-      {/* Navigation / Header */}
       <nav className="sticky top-0 z-10 flex flex-col gap-4 border-b border-slate-200 bg-white/80 p-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between px-8">
         <div className="flex items-center gap-4">
           <button
@@ -179,7 +178,6 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Search Bar Wrapper */}
         <div className="relative flex-1 max-w-md mx-4">
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
           <input
@@ -208,10 +206,8 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Main Grid Content */}
       <main className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
 
-        {/* Groups Grid Section */}
         <div>
           <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">Class Groups</h2>
           <motion.div layout className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -242,7 +238,6 @@ export default function Home() {
                       </p>
                     </div>
 
-                    {/* Modern Active Indicator Switch */}
                     <div className="pointer-events-none">
                       <div className={`w-9 h-5 rounded-full transition-colors flex items-center p-0.5 ${isSelected ? 'bg-blue-500' : 'bg-slate-200'}`}>
                         <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${isSelected ? 'translate-x-4' : 'translate-x-0'}`} />
@@ -255,7 +250,6 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* Students Table Section */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <h2 className="text-sm font-bold text-slate-500">Student Roster</h2>
@@ -340,7 +334,7 @@ export default function Home() {
         </div>
       </main>
 
-      {/* --- Modals Styling Updates --- */}
+      
       <Rodal visible={groupModal} onClose={() => setGroupModal(false)} customStyles={{ width: "400px", height: "240px", borderRadius: "20px", padding: "24px" }}>
         <div className="flex flex-col gap-4 text-slate-900">
           <div>
